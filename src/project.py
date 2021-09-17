@@ -50,7 +50,7 @@ def current_iteration(job):
 
 @MyProject.label
 def completed(job):
-    pass
+    return job.doc.get("done")
 
 
 @MyProject.label
@@ -61,7 +61,7 @@ def initialized(job):
 @directives(executable="python -u")
 @directives(ngpu=1)
 @MyProject.operation
-@MyProject.post(sampled)
+@MyProject.post(completed)
 def optimize(job):
     from msibi import MSIBI, State, Pair, Bond, Angle, mie
     import gsd
@@ -139,6 +139,8 @@ def optimize(job):
                 dt=job.sp.dt,
                 gsd_period=job.sp.gsd_period
                 )
+
+        job.doc["done"] = True
 
 
 if __name__ == "__main__":
