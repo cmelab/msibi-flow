@@ -26,6 +26,14 @@ def get_parameters():
     parameters["num_rdf_frames"] = [101]
     parameters["smooth_rdf"] = [True]
     parameters["rdf_exclude_bonds"] = [False]
+    parameters["r_switch"] = [None]
+    parameters["integrator"] = []
+    parameters["integrator_kwargs"] = []
+    parameters["dt"] = []
+    parameters["gsd_period"] = []
+    parameters["initial_potential"] = []
+    parameters["iterations"] = []
+    parameters["sim_seed"] = [42]
 
     parameters["states"] = [
                 [{}, {}, {}],
@@ -39,9 +47,6 @@ def get_parameters():
     parameters["angles"] = [
                 [{}, {}, {}],
             ]
-    parameters["initial_potential"] = []
-    parameters["iterations"] = []
-    parameters["sim_seed"] = [42]
     return list(parameters.keys()), list(product(*parameters.values()))
 
 def main():
