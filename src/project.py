@@ -84,7 +84,11 @@ def optimize(job):
             if "potential" in pair.keys():
                 potential=pair["potential"]
             else:
-                potential=job.sp.initial_potential
+                if job.sp.initial_potential == "morse":
+                    potential = morse
+                elif job.sp.initial_potential == "mie":
+                    potential = mie
+
             opt.add_pair(
                     Pair(
                         type1=pair["type1"],
