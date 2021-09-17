@@ -44,17 +44,9 @@ class Fry(DefaultSlurmEnvironment):
         )
 
 # Definition of project-related labels (classification)
-def current_iteration(job):
-    pass
-
 @MyProject.label
 def completed(job):
     return job.doc.get("done")
-
-
-@MyProject.label
-def initialized(job):
-    pass
 
 
 @directives(executable="python -u")
@@ -62,9 +54,7 @@ def initialized(job):
 @MyProject.operation
 @MyProject.post(completed)
 def optimize(job):
-    from msibi import MSIBI, State, Pair, Bond, Angle, mie
-    import gsd
-    import gsd.hoomd
+    from msibi import MSIBI, State, Pair, Bond, Angle, mie, morse
     import logging
 
     with job:
