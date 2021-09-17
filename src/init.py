@@ -23,17 +23,18 @@ def get_parameters():
     '''
     parameters = OrderedDict()
     parameters["potential_cutoff"] = [5.0]
-    parameters["num_rdf_frames"] = [101]
+    parameters["num_rdf_points"] = [101]
+    parameters["num_rdf_frames"] = [5]
     parameters["smooth_rdf"] = [True]
-    parameters["rdf_exclude_bonds"] = [False]
+    parameters["rdf_exclude_bonded"] = [False]
     parameters["r_switch"] = [None]
     parameters["integrator"] = []
     parameters["integrator_kwargs"] = []
-    parameters["dt"] = []
+    parameters["dt"] = [0.001]
     parameters["gsd_period"] = []
     parameters["initial_potential"] = []
-    parameters["iterations"] = []
-    parameters["sim_seed"] = [42]
+    parameters["iterations"] = [20]
+    parameters["n_steps"] = [1e6]
 
     parameters["states"] = [
                 [{}, {}, {}],

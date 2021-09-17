@@ -45,11 +45,11 @@ class Fry(DefaultSlurmEnvironment):
         )
 
 # Definition of project-related labels (classification)
-def current_step(job):
+def current_iteration(job):
     pass
 
 @MyProject.label
-def sampled(job):
+def completed(job):
     pass
 
 
@@ -71,7 +71,74 @@ def optimize(job):
 
     with job:
         logging.info("Setting up MSIBI optimizer...")
+        opt = MSIBI(
+                pot_cutoff=job.sp.potential_cutoff,
+                rdf_cutoff=job.sp.potential_cutoff,
+                n_rdf_points=job.sp.num_rdf_points,
+                max_frames=job.sp.num_rdf_frames,
+                smooth_rdfs=job.sp.smooth_rdf,
+                rdf_exclude_bonded=job.sp.rdf_exclude_bonded,
+                verbose=False
+                )
+        logging.info("Creating State objects...")
+        for state in job.states:
+            opt.add_state(
+                    State(
+                    name=state["name"],
+                    kT=state["kT"],
+                    traj_file=state["target_trajectory"],
+                    alpha=state["alpha"]
+                )
+            )
 
+        logging.info("Creating Pair objects...")
+        for pair in job.pairs:
+            if "potential" in pair.keys():
+                potential=pair["potential"]
+            else:
+                potential=job.sp.initial_potential
+            opt.add_pair(
+                    Pair(
+                        type1=pair["type1"],
+                        type2=pair["type2"],
+                        potential=potential
+                    )
+                )
+
+        if job.sp.bonds is not None:
+            logging.info("Creating Bond objects...")
+            for bond in job.bonds:
+                opt.add_bond(
+                        Bond(
+                            type1=bond["type1"],
+                            type2=bond["type2"],
+                            k=bond["k"],
+                            r0=bond["r0"]
+                        )
+                    )
+        
+        if job.sp.angles is not None:
+            logging.info("Creating Angle objects...")
+            for angle in job.angles:
+                opt.add_angle(
+                        Angle(
+                            type1=angle["type1"],
+                            type2=angle["type2"],
+                            type3=angle["type3"],
+                            k=angle["k"],
+                            theta=angle["theta0"]
+                        )
+                    )
+
+        opt.optimize(
+                n_iterations=job.sp.iterations,
+                engine="hoomd",
+                n_steps=job.sp.n_steps,
+                integrator=job.sp.integrator,
+                integrator_kwargs=job.sp.integrator_kwargs,
+                dt=job.sp.dt,
+                gsd_period=job.sp.gsd_period
+                )
 
 
 if __name__ == "__main__":
