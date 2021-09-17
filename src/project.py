@@ -9,7 +9,6 @@ import signac
 from flow import FlowProject, directives
 from flow.environment import DefaultSlurmEnvironment
 from flow.environments.xsede import BridgesEnvironment, CometEnvironment
-import os
 
 class MyProject(FlowProject):
     pass
@@ -66,7 +65,6 @@ def optimize(job):
     from msibi import MSIBI, State, Pair, Bond, Angle, mie
     import gsd
     import gsd.hoomd
-    import os
     import logging
 
     with job:
