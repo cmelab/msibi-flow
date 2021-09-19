@@ -70,11 +70,16 @@ def optimize(job):
                 )
         logging.info("Creating State objects...")
         for state in job.states:
+            traj_file_path = os.path.abspath(
+                    os.path.join(
+                        job.ws, "..", "..", state["target_trajectory"]
+                        )
+                    )
             opt.add_state(
                     State(
                     name=state["name"],
                     kT=state["kT"],
-                    traj_file=state["target_trajectory"],
+                    traj_file=traj_file_path,
                     alpha=state["alpha"]
                 )
             )
