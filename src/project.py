@@ -8,7 +8,8 @@ status, execute operations and submit them to a cluster. See also:
 import signac
 from flow import FlowProject, directives
 from flow.environment import DefaultSlurmEnvironment
-from flow.environments.xsede import BridgesEnvironment, CometEnvironment
+from flow.environments.xsede import Bridges2Environment
+import os
 
 class MyProject(FlowProject):
     pass
@@ -69,7 +70,7 @@ def optimize(job):
                 verbose=False
                 )
         logging.info("Creating State objects...")
-        for state in job.states:
+        for state in job.sp.states:
             traj_file_path = os.path.abspath(
                     os.path.join(
                         job.ws, "..", "..", state["target_trajectory"]
@@ -80,19 +81,20 @@ def optimize(job):
                     name=state["name"],
                     kT=state["kT"],
                     traj_file=traj_file_path,
-                    alpha=state["alpha"]
+                    alpha=state["alpha"],
+					_dir=job.ws
                 )
             )
 
         logging.info("Creating Pair objects...")
-        for pair in job.pairs:
+        for pair in job.sp.pairs:
             if "potential" in pair.keys():
                 potential=pair["potential"]
             else:
                 if job.sp.initial_potential == "morse":
-                    potential = morse
+                    potential = morse(job.sp.potential_cutoff, 1.0, 1.0)
                 elif job.sp.initial_potential == "mie":
-                    potential = mie
+                    potential = mie(job.sp.potential_cutoff, 1.0, 1.0)
 
             opt.add_pair(
                     Pair(
@@ -104,7 +106,7 @@ def optimize(job):
 
         if job.sp.bonds is not None:
             logging.info("Creating Bond objects...")
-            for bond in job.bonds:
+            for bond in job.sp.bonds:
                 opt.add_bond(
                         Bond(
                             type1=bond["type1"],
@@ -116,7 +118,7 @@ def optimize(job):
         
         if job.sp.angles is not None:
             logging.info("Creating Angle objects...")
-            for angle in job.angles:
+            for angle in job.sp.angles:
                 opt.add_angle(
                         Angle(
                             type1=angle["type1"],
@@ -132,7 +134,7 @@ def optimize(job):
                 engine="hoomd",
                 n_steps=job.sp.n_steps,
                 integrator=job.sp.integrator,
-                integrator_kwargs=job.sp.integrator_kwargs,
+                integrator_kwargs=job.doc.integrator_kwargs,
                 dt=job.sp.dt,
                 gsd_period=job.sp.gsd_period
                 )
