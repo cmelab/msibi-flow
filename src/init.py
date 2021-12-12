@@ -25,6 +25,7 @@ def get_parameters():
     parameters["num_rdf_frames"] = [5] # Num of frames to sample in RDF
     parameters["smooth_rdf"] = [True]
     parameters["rdf_exclude_bonded"] = [True] # Exclude pairs on same molecule
+    parameters["head_correction"] = ["exponential"]
     parameters["r_switch"] = [None]
     parameters["integrator"] = ["hoomd.md.integrate.nvt"] # Str of hoomd integrator
     parameters["integrator_kwargs"] = [{"tau": 0.1}] # Dictionary of integrator kwargs
