@@ -69,6 +69,9 @@ def optimize(job):
                 rdf_exclude_bonded=job.sp.rdf_exclude_bonded,
                 verbose=False
                 )
+        job.doc["dr"] = opt.dr
+        job.doc["pot_r"] = opt.pot_r
+
         logging.info("Creating State objects...")
         for state in job.sp.states:
             traj_file_path = os.path.abspath(
