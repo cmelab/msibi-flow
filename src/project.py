@@ -93,7 +93,7 @@ def optimize(job):
                 potential=pair["potential"]
             else:
                 if job.sp.initial_potential == "morse":
-                    potential = morse(job.sp.potential_cutoff, 1.0, 1.0)
+                    potential = morse(opt.pot_r, 1.0, 1.0)
                 elif job.sp.initial_potential == "mie":
                     potential = mie(job.sp.potential_cutoff, 1.0, 1.0)
 
