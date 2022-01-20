@@ -117,7 +117,7 @@ def optimize(job):
                             r0=bond["r0"]
                         )
                     )
-        
+
         if job.sp.angles is not None:
             logging.info("Creating Angle objects...")
             for angle in job.sp.angles:
@@ -135,7 +135,7 @@ def optimize(job):
                 max_frames=job.sp.num_rdf_frames,
                 rdf_cutoff=job.sp.potential_cutoff,
                 r_min=job.sp.r_min,
-                r_switch=job.sp.r_switch
+                r_switch=job.sp.r_switch,
                 n_rdf_points=job.sp.num_rdf_points,
                 smooth_rdfs=job.sp.smooth_rdf,
                 rdf_exclude_bonded=job.sp.rdf_exclude_bonded,
