@@ -109,27 +109,22 @@ def optimize(job):
         if job.sp.bonds is not None:
             logging.info("Creating Bond objects...")
             for bond in job.sp.bonds:
-                opt.add_bond(
-                        Bond(
-                            type1=bond["type1"],
-                            type2=bond["type2"],
-                            k=bond["k"],
-                            r0=bond["r0"]
-                        )
-                    )
+                new_bond = Bond(type1=bond["type1"], type2=bond["type2"])
+                if bond["form"] == "harmonic":
+                    new_bond.set_harmonic(k=bond["k"], r0=bond["r0"])
+
+                opt.add_bond(new_bond)
 
         if job.sp.angles is not None:
             logging.info("Creating Angle objects...")
             for angle in job.sp.angles:
-                opt.add_angle(
-                        Angle(
-                            type1=angle["type1"],
-                            type2=angle["type2"],
-                            type3=angle["type3"],
-                            k=angle["k"],
-                            theta=angle["theta0"]
-                        )
-                    )
+                new_angle = Angle(
+                        type1=angle["type1"],
+                        type2=angle["type2"],
+                        type3=angle["type3"],
+                )
+                if angle["form"] == "harmonic":
+                    new_angle.set_harmonic(k=angle["k"], theta0=angle["theta0"])
 
         opt.optimize_pairs(
                 max_frames=job.sp.num_rdf_frames,

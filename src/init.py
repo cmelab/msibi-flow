@@ -20,21 +20,21 @@ def get_parameters():
     your MSIBI instructions.
     '''
     parameters = OrderedDict()
-    parameters["potential_cutoff"] = [7.0] # Used for pot and rdf cut
+    parameters["potential_cutoff"] = [5.0] # Used for pot and rdf cut
     parameters["r_min"] = [1e-4]
     parameters["num_rdf_points"] = [101] # Num of RDF bins
-    parameters["num_rdf_frames"] = [5] # Num of frames to sample in RDF
+    parameters["num_rdf_frames"] = [15] # Num of frames to sample in RDF
     parameters["smooth_rdf"] = [True]
     parameters["rdf_exclude_bonded"] = [True] # Exclude pairs on same molecule
-    parameters["head_correction"] = ["exponential"]
+    parameters["head_correction"] = ["linear"]
     parameters["r_switch"] = [None]
     parameters["integrator"] = ["hoomd.md.integrate.nvt"] # Str of hoomd integrator
     parameters["integrator_kwargs"] = [{"tau": 0.1}] # Dictionary of integrator kwargs
     parameters["dt"] = [0.001]
-    parameters["gsd_period"] = [1000] # Num of steps between gsd snapshots
+    parameters["gsd_period"] = [10000] # Num of steps between gsd snapshots
     parameters["initial_potential"] = ["mie"] # mie, morse
-    parameters["iterations"] = [10] 
-    parameters["n_steps"] = [1e6] # Num simulation steps during each iteration
+    parameters["iterations"] = [5]
+    parameters["n_steps"] = [2e5] # Num simulation steps during each iteration
 
     # Information used to create MSIBI objects (State, Pair, Bond, Angle)
 		# Required keys for each dictionary:
@@ -47,21 +47,25 @@ def get_parameters():
     # parameters to None
 
     parameters["states"] = [
-            [{"name":"A", "kT":2.0, "target_trajectory":"stateA_2.0kT.gsd", "alpha":0.40},
-             {"name":"B", "kT":5.0, "target_trajectory":"stateB_5.0kT.gsd", "alpha":0.40},
-             {"name":"C", "kT":9.0, "target_trajectory":"stateC_9.0kT.gsd", "alpha":0.20},]
+            [{"name":"A", "kT":6.2, "target_trajectory":"6.2kT-1.27den.gsd", "alpha":1.0},
+             ]
          ]
     parameters["pairs"] = [
-        [{"type1":"P", "type2":"P"},
-         {"type1":"M", "type2":"M"},
-         {"type1":"P", "type2":"M"}],
+        [{"type1":"E", "type2":"E"},
+         {"type1":"K", "type2":"K"},
+         {"type1":"E", "type2":"K"}],
 	]
     parameters["bonds"] = [
-        [{"type1":"P", "type2":"M", "k":50, "r0":3.4}]
+            [{"type1":"E", "type2":"K", "k":550, "r0":1.53, "form": "harmonic"},
+            {"type1":"K", "type2":"K", "k":550, "r0":1.56, "form": "harmonic"}
+            ]
     ]
     parameters["angles"] = [
-        [{"type1":"P", "type2":"M", "type3": "P",  "k":5, "theta0":2.0},
-         {"type1":"M", "type2":"P", "type3": "M",  "k":5, "theta0":2.0}]
+            [{"type1":"E", "type2":"K", "type3": "K",  "k":100,
+                "theta0":2.4, "form": "harmonic"},
+             {"type1":"K", "type2":"E", "type3": "K",  "k":100,
+                 "theta0":2.6, "form": "harmonic"},
+            ]
     ]
     return list(parameters.keys()), list(product(*parameters.values()))
 
