@@ -59,34 +59,32 @@ def optimize(job):
     import logging
 
     with job:
+        job.doc["done"] = False
         logging.info("Setting up MSIBI optimizer...")
         opt = MSIBI(
-                pot_cutoff=job.sp.potential_cutoff,
-                rdf_cutoff=job.sp.potential_cutoff,
-                n_rdf_points=job.sp.num_rdf_points,
-                max_frames=job.sp.num_rdf_frames,
-                smooth_rdfs=job.sp.smooth_rdf,
-                rdf_exclude_bonded=job.sp.rdf_exclude_bonded,
-                verbose=False
-                )
-        job.doc["dr"] = opt.dr
-        job.doc["pot_r"] = opt.pot_r
+            integrator=job.sp.integrator,
+            integrator_kwargs=job.doc.integrator_kwargs,
+            dt=job.sp.dt,
+            gsd_period=job.sp.gsd_period,
+            n_iterations=job.sp.iterations,
+            n_steps=job.sp.n_steps,
+        )
 
         logging.info("Creating State objects...")
         for state in job.sp.states:
             traj_file_path = os.path.abspath(
                     os.path.join(
                         job.ws, "..", "..", state["target_trajectory"]
-                        )
                     )
+            )
             opt.add_state(
                     State(
-                    name=state["name"],
-                    kT=state["kT"],
-                    traj_file=traj_file_path,
-                    alpha=state["alpha"],
-					_dir=job.ws
-                )
+                        name=state["name"],
+                        kT=state["kT"],
+                        traj_file=traj_file_path,
+                        alpha=state["alpha"],
+					    _dir=job.ws
+                    )
             )
 
         logging.info("Creating Pair objects...")
@@ -133,16 +131,19 @@ def optimize(job):
                         )
                     )
 
-        opt.optimize(
-                n_iterations=job.sp.iterations,
-                engine="hoomd",
-                n_steps=job.sp.n_steps,
-                integrator=job.sp.integrator,
-                integrator_kwargs=job.doc.integrator_kwargs,
-                dt=job.sp.dt,
-                gsd_period=job.sp.gsd_period
-                )
+        opt.optimize_pairs(
+                max_frames=job.sp.num_rdf_frames,
+                rdf_cutoff=job.sp.potential_cutoff,
+                r_min=job.sp.r_min,
+                r_switch=job.sp.r_switch
+                n_rdf_points=job.sp.num_rdf_points,
+                smooth_rdfs=job.sp.smooth_rdf,
+                rdf_exclude_bonded=job.sp.rdf_exclude_bonded,
 
+        )
+
+        job.doc["dr"] = opt.dr
+        job.doc["pot_r"] = opt.pot_r
         job.doc["done"] = True
 
 

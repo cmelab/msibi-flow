@@ -21,6 +21,7 @@ def get_parameters():
     '''
     parameters = OrderedDict()
     parameters["potential_cutoff"] = [7.0] # Used for pot and rdf cut
+    parameters["r_min"] = [1e-4]
     parameters["num_rdf_points"] = [101] # Num of RDF bins
     parameters["num_rdf_frames"] = [5] # Num of frames to sample in RDF
     parameters["smooth_rdf"] = [True]
