@@ -49,82 +49,85 @@ class Fry(DefaultSlurmEnvironment):
 def completed(job):
     return job.doc.get("done")
 
+def get_file(job, file_name):
+    return os.path.abspath(os.path.join(job.ws, "..", "..", file_name))
 
 @directives(executable="python -u")
 @directives(ngpu=1)
 @MyProject.operation
 @MyProject.post(completed)
 def optimize(job):
-    from msibi import MSIBI, State, Pair, Bond, Angle 
+    from msibi import MSIBI, State, Pair, Bond, Angle
     import logging
 
     with job:
         job.doc["done"] = False
+
         logging.info("Setting up MSIBI optimizer...")
         opt = MSIBI(
             integrator=job.sp.integrator,
             integrator_kwargs=job.doc.integrator_kwargs,
             dt=job.sp.dt,
             gsd_period=job.sp.gsd_period,
-            n_iterations=job.sp.iterations,
             n_steps=job.sp.n_steps,
+            max_frames = job.sp.max_frames
         )
 
         logging.info("Creating State objects...")
         for state in job.sp.states:
-            traj_file_path = os.path.abspath(
-                    os.path.join(
-                        job.ws, "..", "..", state["target_trajectory"]
-                    )
-            )
             opt.add_state(
-                    State(
-                        name=state["name"],
-                        kT=state["kT"],
-                        traj_file=traj_file_path,
-                        alpha=state["alpha"],
-					    _dir=job.ws
-                    )
+                State(
+                    name=state["name"],
+                    kT=state["kT"],
+                    traj_file=get_file(job, state["target_trajectory"]),
+                    alpha=state["alpha"],
+					_dir=job.ws
+                )
             )
 
         logging.info("Creating Pair objects...")
         for pair in job.sp.pairs:
-            if "potential" in pair.keys():
-                potential=pair["potential"]
-            else:
-                if job.sp.initial_potential == "morse":
-                    potential = morse(opt.pot_r, 1.0, 1.0)
-                elif job.sp.initial_potential == "mie":
-                    potential = mie(job.sp.potential_cutoff, 1.0, 1.0)
-
-            opt.add_pair(
-                    Pair(
+            _pair = Pair(
                         type1=pair["type1"],
                         type2=pair["type2"],
                         potential=potential,
                         head_correction_form = job.sp.head_correction
                     )
-                )
+
+            if pair["form"] == "table":
+                _pair.set_table_potential(**pair["kwargs"])
+
+            opt.add_pair(_pair)
 
         if job.sp.bonds is not None:
             logging.info("Creating Bond objects...")
             for bond in job.sp.bonds:
-                new_bond = Bond(type1=bond["type1"], type2=bond["type2"])
-                if bond["form"] == "harmonic":
-                    new_bond.set_harmonic(k=bond["k"], r0=bond["r0"])
+                _bond = Bond(
+                        type1=bond["type1"],
+                        type2=bond["type2"],
+                        head_correction_form=job.sp.head_correction
+                )
+                if bond["form"] == "file":
+                    _bond.set_from_file(**bond["kwargs"])
 
-                opt.add_bond(new_bond)
+                elif bond["form"] == "quadratic":
+                    _bond.set_quadratic(**bond["kwargs"])
+
+                opt.add_bond(_bond)
 
         if job.sp.angles is not None:
             logging.info("Creating Angle objects...")
             for angle in job.sp.angles:
-                new_angle = Angle(
+                _angle = Angle(
                         type1=angle["type1"],
                         type2=angle["type2"],
                         type3=angle["type3"],
+                        head_correction_form=job.sp.head_correction
                 )
-                if angle["form"] == "harmonic":
-                    new_angle.set_harmonic(k=angle["k"], theta0=angle["theta0"])
+                if angle["form"] == "file":
+                    _angle.set_from_file(**angle["kwargs"])
+                elif angle["form"] == "harmonic":
+                    _angle.set_harmonic(**angle["kwargs"])
 
         opt.optimize_pairs(
                 max_frames=job.sp.num_rdf_frames,

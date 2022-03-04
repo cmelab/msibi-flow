@@ -18,13 +18,11 @@ from itertools import product
 def get_parameters():
     '''Use the listed parameters below to set up
     your MSIBI instructions.
+
     '''
     parameters = OrderedDict()
-    parameters["potential_cutoff"] = [5.0] # Used for pot and rdf cut
-    parameters["r_min"] = [1e-4]
-    parameters["num_rdf_points"] = [101] # Num of RDF bins
-    parameters["num_rdf_frames"] = [15] # Num of frames to sample in RDF
-    parameters["smooth_rdf"] = [True]
+    parameters["max_frames"] = [15] # Num of frames to sample in trajectory
+    parameters["smooth"] = [True]
     parameters["rdf_exclude_bonded"] = [True] # Exclude pairs on same molecule
     parameters["head_correction"] = ["linear"]
     parameters["r_switch"] = [None]
@@ -32,39 +30,93 @@ def get_parameters():
     parameters["integrator_kwargs"] = [{"tau": 0.1}] # Dictionary of integrator kwargs
     parameters["dt"] = [0.001]
     parameters["gsd_period"] = [10000] # Num of steps between gsd snapshots
-    parameters["initial_potential"] = ["mie"] # mie, morse
-    parameters["iterations"] = [5]
+    parameters["iterations"] = [5] # Num of MSIBI iterations to perform
     parameters["n_steps"] = [2e5] # Num simulation steps during each iteration
 
-    # Information used to create MSIBI objects (State, Pair, Bond, Angle)
-		# Required keys for each dictionary:
-			# states: name, kT, target trajectory, alpha
-			# pair: type1, type1, potential (optional)
-			# bonds: type1, type2, k, r0
-			# angles: type1, type2, type3, k, theta0
-
-    # If your system does not contain bonds or angles, change both
-    # parameters to None
-
+    # Add state points to use during MSIBI
     parameters["states"] = [
-            [{"name":"A", "kT":6.2, "target_trajectory":"6.2kT-1.27den.gsd", "alpha":1.0},
-             ]
-         ]
+        [
+            {"name":"A",
+            "kT":6.2,
+            "target_trajectory":"6.2kT-1.27den.gsd",
+            "alpha":1.0
+            },
+        ]
+    ]
+
+    # Add parameters needed to create Pair objects
     parameters["pairs"] = [
-        [{"type1":"E", "type2":"E"},
-         {"type1":"K", "type2":"K"},
-         {"type1":"E", "type2":"K"}],
+        [
+            {"type1":"E_P",
+             "type2":"E_P",
+             "form": "table",
+             "kwargs": {
+                 "n_points": 101,
+                 "epsilon": 1,
+                 "sigma": 1,
+                 "r_max": 5.0,
+                 "r_min": 1e-4
+              }
+             },
+
+            {"type1":"E_P",
+             "type2":"K_P",
+             "form": "table",
+             "kwargs": {
+                 "n_points": 101,
+                 "epsilon": 1,
+                 "sigma": 1,
+                 "r_max": 5.0,
+                 "r_min": 1e-4
+              }
+             },
+
+            {"type1":"E_P",
+             "type2":"K_P",
+             "form": "table",
+             "kwargs": {
+                 "n_points": 101,
+                 "epsilon": 1,
+                 "sigma": 1,
+                 "r_max": 5.0,
+                 "r_min": 1e-4
+              }
+             },
+        ],
 	]
+
+    # Add parameters needed to create Bond and Angle objects
     parameters["bonds"] = [
-            [{"type1":"E", "type2":"K", "k":550, "r0":1.53, "form": "harmonic"},
-            {"type1":"K", "type2":"K", "k":550, "r0":1.56, "form": "harmonic"}
+            [
+                {"type1":"E_P",
+                 "type2":"K_P",
+                 "form": "file",
+                 "kwargs": {"file_path": "E_P-K_P-bond_pot.txt"}
+                 },
+
+                {"type1":"K_P",
+                 "type2":"K_P",
+                 "form": "file",
+                 "kwargs": {"file_path": "K_P-K_P-bond_pot.txt"}
+                 }
             ]
     ]
+
     parameters["angles"] = [
-            [{"type1":"E", "type2":"K", "type3": "K",  "k":100,
-                "theta0":2.4, "form": "harmonic"},
-             {"type1":"K", "type2":"E", "type3": "K",  "k":100,
-                 "theta0":2.6, "form": "harmonic"},
+            [
+                {"type1":"E_P",
+                "type2":"K_P",
+                "type3": "K_P",
+                "form": "file",
+                "kwargs": {"file_path": "E_P-K_P-K_P-angle_pot.txt"}
+                },
+
+                {"type1":"K_P",
+                "type2":"E_P",
+                "type3": "K_P",
+                "form": "file",
+                "kwargs": {"file_path": "K_P-E_P-K_P-angle_pot.txt"}
+                },
             ]
     ]
     return list(parameters.keys()), list(product(*parameters.values()))
