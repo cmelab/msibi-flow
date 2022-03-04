@@ -55,7 +55,7 @@ def completed(job):
 @MyProject.operation
 @MyProject.post(completed)
 def optimize(job):
-    from msibi import MSIBI, State, Pair, Bond, Angle, mie, morse
+    from msibi import MSIBI, State, Pair, Bond, Angle 
     import logging
 
     with job:
