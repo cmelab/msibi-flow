@@ -90,7 +90,6 @@ def optimize(job):
             _pair = Pair(
                         type1=pair["type1"],
                         type2=pair["type2"],
-                        potential=potential,
                         head_correction_form = job.sp.head_correction
                     )
 
