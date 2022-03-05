@@ -21,17 +21,20 @@ def get_parameters():
 
     '''
     parameters = OrderedDict()
-    parameters["max_frames"] = [15] # Num of frames to sample in trajectory
-    parameters["smooth"] = [True]
-    parameters["rdf_exclude_bonded"] = [True] # Exclude pairs on same molecule
+    parameters["max_frames"] = [15] #Num of frames to sample in trajectory
     parameters["head_correction"] = ["linear"]
-    parameters["r_switch"] = [None]
-    parameters["integrator"] = ["hoomd.md.integrate.nvt"] # Str of hoomd integrator
-    parameters["integrator_kwargs"] = [{"tau": 0.1}] # Dictionary of integrator kwargs
+    parameters["smooth"] = [True] #Whether or not to smooth the distributions
+    parameters["integrator"] = ["hoomd.md.integrate.nvt"] #Hoomd integrator type
+    parameters["integrator_kwargs"] = [{"tau": 0.1}] #dict of integrator kwargs
     parameters["dt"] = [0.001]
-    parameters["gsd_period"] = [10000] # Num of steps between gsd snapshots
-    parameters["iterations"] = [5] # Num of MSIBI iterations to perform
-    parameters["n_steps"] = [2e5] # Num simulation steps during each iteration
+    parameters["gsd_period"] = [10000] #Num of steps between gsd snapshots
+    parameters["iterations"] = [5] #Num of MSIBI iterations to perform
+    parameters["n_steps"] = [2e5] #Num simulation steps during each iteration
+    parameters["optimize"]  = ["bonds"] #Choose with potential to optimize
+
+    # These parameters below are only needed when optimizing pair potentials
+    parameters["rdf_exclude_bonded"] = [True] #Exclude pairs on same molecule
+    parameters["r_switch"] = [None] #Distance value to apply tail correction
 
     # Add state points to use during MSIBI
     parameters["states"] = [

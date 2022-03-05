@@ -129,19 +129,27 @@ def optimize(job):
                 elif angle["form"] == "harmonic":
                     _angle.set_harmonic(**angle["kwargs"])
 
-        opt.optimize_pairs(
-                max_frames=job.sp.num_rdf_frames,
-                rdf_cutoff=job.sp.potential_cutoff,
-                r_min=job.sp.r_min,
-                r_switch=job.sp.r_switch,
-                n_rdf_points=job.sp.num_rdf_points,
-                smooth_rdfs=job.sp.smooth_rdf,
-                rdf_exclude_bonded=job.sp.rdf_exclude_bonded,
+        if job.sp.optimize == "bonds":
+            opt.optimize_bonds(
+                    n_iterations=job.sp.iterations,
+                    smooth=job.sp.smooth,
+                    _dir=job.ws
+            )
+        elif job.sp.optimize == "angles":
+            opt.optimize_angles(
+                    n_iterations=job.sp.iterations,
+                    smooth=job.sp.smooth,
+                    _dir=job.ws
+            )
+        elif job.sp.optimize == "pairs":
+            opt.optimize_pairs(
+                    n_iterations=job.sp.iterations,
+                    smooth_rdfs=job.sp.smooth,
+                    rdf_exclude_bonded=job.sp.rdf_exclude_bonded,
+                    r_switch=job.sp.r_switch,
+                    _dir=job.ws
+            )
 
-        )
-
-        job.doc["dr"] = opt.dr
-        job.doc["pot_r"] = opt.pot_r
         job.doc["done"] = True
 
 
