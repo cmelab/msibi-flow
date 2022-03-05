@@ -130,6 +130,8 @@ def optimize(job):
                 elif angle["form"] == "harmonic":
                     _angle.set_harmonic(**angle["kwargs"])
 
+                opt.add_angle(_angle)
+
         if job.sp.optimize == "bonds":
             opt.optimize_bonds(
                     n_iterations=job.sp.iterations,
