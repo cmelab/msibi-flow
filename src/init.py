@@ -30,7 +30,7 @@ def get_parameters():
     parameters["gsd_period"] = [10000] #Num of steps between gsd snapshots
     parameters["iterations"] = [5] #Num of MSIBI iterations to perform
     parameters["n_steps"] = [2e5] #Num simulation steps during each iteration
-    parameters["optimize"]  = ["bonds"] #Choose with potential to optimize
+    parameters["optimize"]  = ["pairs"] #Choose with potential to optimize
 
     # These parameters below are only needed when optimizing pair potentials
     parameters["rdf_exclude_bonded"] = [True] #Exclude pairs on same molecule
@@ -40,8 +40,8 @@ def get_parameters():
     parameters["states"] = [
         [
             {"name":"A",
-            "kT":6.2,
-            "target_trajectory":"6.2kT-1.27den.gsd",
+            "kT":5.5,
+            "target_trajectory":"P_1.27den_5.5kT.gsd",
             "alpha":1.0
             },
         ]
@@ -74,7 +74,7 @@ def get_parameters():
               }
              },
 
-            {"type1":"E_P",
+            {"type1":"K_P",
              "type2":"K_P",
              "form": "table",
              "kwargs": {

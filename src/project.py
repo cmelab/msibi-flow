@@ -106,9 +106,10 @@ def optimize(job):
                         type2=bond["type2"],
                         head_correction_form=job.sp.head_correction
                 )
-                if bond["form"] == "file":
-                    _bond.set_from_file(**bond["kwargs"])
 
+                if bond["form"] == "file":
+                    file_path = get_file(job, bond["kwargs"]["file_path"])
+                    _bond.set_from_file(file_path=file_path)
                 elif bond["form"] == "quadratic":
                     _bond.set_quadratic(**bond["kwargs"])
 
@@ -124,7 +125,8 @@ def optimize(job):
                         head_correction_form=job.sp.head_correction
                 )
                 if angle["form"] == "file":
-                    _angle.set_from_file(**angle["kwargs"])
+                    file_path = get_file(job, angle["kwargs"]["file_path"])
+                    _angle.set_from_file(file_path)
                 elif angle["form"] == "harmonic":
                     _angle.set_harmonic(**angle["kwargs"])
 
