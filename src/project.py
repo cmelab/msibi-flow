@@ -4,12 +4,15 @@ Execute this script directly from the command line, to view your project's
 status, execute operations and submit them to a cluster. See also:
 
     $ python src/project.py --help
+
 """
+
 import signac
 from flow import FlowProject, directives
 from flow.environment import DefaultSlurmEnvironment
 from flow.environments.xsede import Bridges2Environment
 import os
+
 
 class MyProject(FlowProject):
     pass
@@ -124,6 +127,7 @@ def optimize(job):
                         type3=angle["type3"],
                         head_correction_form=job.sp.head_correction
                 )
+
                 if angle["form"] == "file":
                     file_path = get_file(job, angle["kwargs"]["file_path"])
                     _angle.set_from_file(file_path)
