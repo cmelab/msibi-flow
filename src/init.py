@@ -21,20 +21,20 @@ def get_parameters():
 
     '''
     parameters = OrderedDict()
-    parameters["max_frames"] = [15] #Num of frames to sample in trajectory
+    parameters["max_frames"] = [15] # Num of frames to sample in trajectory
     parameters["head_correction"] = ["linear"]
-    parameters["smooth"] = [True] #Whether or not to smooth the distributions
-    parameters["integrator"] = ["hoomd.md.integrate.nvt"] #Hoomd integrator type
-    parameters["integrator_kwargs"] = [{"tau": 0.1}] #dict of integrator kwargs
-    parameters["dt"] = [0.001]
-    parameters["gsd_period"] = [10000] #Num of steps between gsd snapshots
-    parameters["iterations"] = [5] #Num of MSIBI iterations to perform
-    parameters["n_steps"] = [2e5] #Num simulation steps during each iteration
-    parameters["optimize"]  = ["pairs"] #Choose with potential to optimize
+    parameters["smooth"] = [True] # Whether or not to smooth the distributions
+    parameters["integrator"] = ["hoomd.md.integrate.nvt"] # Hoomd integrator type
+    parameters["integrator_kwargs"] = [{"tau": 0.1}] # dict of integrator kwargs
+    parameters["dt"] = [0.0003]
+    parameters["gsd_period"] = [10000] # Num of steps between gsd snapshots
+    parameters["iterations"] = [5] # Num of MSIBI iterations to perform
+    parameters["n_steps"] = [2e5] # Num simulation steps during each iteration
+    parameters["optimize"]  = ["pairs"] # Choose which potential to optimize
 
     # These parameters below are only needed when optimizing pair potentials
-    parameters["rdf_exclude_bonded"] = [True] #Exclude pairs on same molecule
-    parameters["r_switch"] = [None] #Distance value to apply tail correction
+    parameters["rdf_exclude_bonded"] = [True] # Exclude pairs on same molecule
+    parameters["r_switch"] = [None] # Distance value to apply tail correction
 
     # Add state points to use during MSIBI
     parameters["states"] = [
@@ -125,7 +125,7 @@ def get_parameters():
     return list(parameters.keys()), list(product(*parameters.values()))
 
 def main():
-    project = signac.init_project("test-msibi")
+    project = signac.init_project("msibi")
     param_names, param_combinations = get_parameters()
     # Create the generate jobs
     for params in param_combinations:
