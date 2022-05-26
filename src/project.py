@@ -4,12 +4,15 @@ Execute this script directly from the command line, to view your project's
 status, execute operations and submit them to a cluster. See also:
 
     $ python src/project.py --help
+
 """
+
 import signac
 from flow import FlowProject, directives
 from flow.environment import DefaultSlurmEnvironment
 from flow.environments.xsede import Bridges2Environment
 import os
+
 
 class MyProject(FlowProject):
     pass
@@ -49,41 +52,37 @@ class Fry(DefaultSlurmEnvironment):
 def completed(job):
     return job.doc.get("done")
 
+def get_file(job, file_name):
+    return os.path.abspath(os.path.join(job.ws, "..", "..", file_name))
 
 @directives(executable="python -u")
 @directives(ngpu=1)
 @MyProject.operation
 @MyProject.post(completed)
 def optimize(job):
-    from msibi import MSIBI, State, Pair, Bond, Angle, mie, morse
+    from msibi import MSIBI, State, Pair, Bond, Angle
     import logging
 
     with job:
+        job.doc["done"] = False
+
         logging.info("Setting up MSIBI optimizer...")
         opt = MSIBI(
-                pot_cutoff=job.sp.potential_cutoff,
-                rdf_cutoff=job.sp.potential_cutoff,
-                n_rdf_points=job.sp.num_rdf_points,
-                max_frames=job.sp.num_rdf_frames,
-                smooth_rdfs=job.sp.smooth_rdf,
-                rdf_exclude_bonded=job.sp.rdf_exclude_bonded,
-                verbose=False
-                )
-        job.doc["dr"] = opt.dr
-        job.doc["pot_r"] = opt.pot_r
+            integrator=job.sp.integrator,
+            integrator_kwargs=job.doc.integrator_kwargs,
+            dt=job.sp.dt,
+            gsd_period=job.sp.gsd_period,
+            n_steps=job.sp.n_steps,
+            max_frames = job.sp.max_frames
+        )
 
         logging.info("Creating State objects...")
         for state in job.sp.states:
-            traj_file_path = os.path.abspath(
-                    os.path.join(
-                        job.ws, "..", "..", state["target_trajectory"]
-                        )
-                    )
             opt.add_state(
-                    State(
+                State(
                     name=state["name"],
                     kT=state["kT"],
-                    traj_file=traj_file_path,
+                    traj_file=get_file(job, state["target_trajectory"]),
                     alpha=state["alpha"],
 					_dir=job.ws
                 )
@@ -91,57 +90,72 @@ def optimize(job):
 
         logging.info("Creating Pair objects...")
         for pair in job.sp.pairs:
-            if "potential" in pair.keys():
-                potential=pair["potential"]
-            else:
-                if job.sp.initial_potential == "morse":
-                    potential = morse(job.sp.potential_cutoff, 1.0, 1.0)
-                elif job.sp.initial_potential == "mie":
-                    potential = mie(job.sp.potential_cutoff, 1.0, 1.0)
-
-            opt.add_pair(
-                    Pair(
+            _pair = Pair(
                         type1=pair["type1"],
                         type2=pair["type2"],
-                        potential=potential,
                         head_correction_form = job.sp.head_correction
                     )
-                )
+
+            if pair["form"] == "table":
+                _pair.set_table_potential(**pair["kwargs"])
+
+            opt.add_pair(_pair)
 
         if job.sp.bonds is not None:
             logging.info("Creating Bond objects...")
             for bond in job.sp.bonds:
-                opt.add_bond(
-                        Bond(
-                            type1=bond["type1"],
-                            type2=bond["type2"],
-                            k=bond["k"],
-                            r0=bond["r0"]
-                        )
-                    )
-        
+                _bond = Bond(
+                        type1=bond["type1"],
+                        type2=bond["type2"],
+                        head_correction_form=job.sp.head_correction
+                )
+
+                if bond["form"] == "file":
+                    file_path = get_file(job, bond["kwargs"]["file_path"])
+                    _bond.set_from_file(file_path=file_path)
+                elif bond["form"] == "quadratic":
+                    _bond.set_quadratic(**bond["kwargs"])
+
+                opt.add_bond(_bond)
+
         if job.sp.angles is not None:
             logging.info("Creating Angle objects...")
             for angle in job.sp.angles:
-                opt.add_angle(
-                        Angle(
-                            type1=angle["type1"],
-                            type2=angle["type2"],
-                            type3=angle["type3"],
-                            k=angle["k"],
-                            theta=angle["theta0"]
-                        )
-                    )
-
-        opt.optimize(
-                n_iterations=job.sp.iterations,
-                engine="hoomd",
-                n_steps=job.sp.n_steps,
-                integrator=job.sp.integrator,
-                integrator_kwargs=job.doc.integrator_kwargs,
-                dt=job.sp.dt,
-                gsd_period=job.sp.gsd_period
+                _angle = Angle(
+                        type1=angle["type1"],
+                        type2=angle["type2"],
+                        type3=angle["type3"],
+                        head_correction_form=job.sp.head_correction
                 )
+
+                if angle["form"] == "file":
+                    file_path = get_file(job, angle["kwargs"]["file_path"])
+                    _angle.set_from_file(file_path)
+                elif angle["form"] == "harmonic":
+                    _angle.set_harmonic(**angle["kwargs"])
+
+                opt.add_angle(_angle)
+
+        if job.sp.optimize == "bonds":
+            opt.optimize_bonds(
+                    n_iterations=job.sp.iterations,
+                    smooth=job.sp.smooth,
+                    _dir=job.ws
+            )
+        elif job.sp.optimize == "angles":
+            opt.optimize_angles(
+                    n_iterations=job.sp.iterations,
+                    smooth=job.sp.smooth,
+                    _dir=job.ws
+            )
+        elif job.sp.optimize == "pairs":
+            opt.optimize_pairs(
+                    n_iterations=job.sp.iterations,
+                    smooth_rdfs=job.sp.smooth,
+                    rdf_exclude_bonded=job.sp.rdf_exclude_bonded,
+                    r_switch=job.sp.r_switch,
+                    _dir=job.ws
+            )
 
         job.doc["done"] = True
 
