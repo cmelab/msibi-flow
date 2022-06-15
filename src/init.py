@@ -21,27 +21,29 @@ def get_parameters():
 
     '''
     parameters = OrderedDict()
-    parameters["max_frames"] = [15] # Num of frames to sample in trajectory
+    parameters["max_frames"] = [20] # Num of frames to sample in trajectory
     parameters["head_correction"] = ["linear"]
     parameters["smooth"] = [True] # Whether or not to smooth the distributions
     parameters["integrator"] = ["hoomd.md.integrate.nvt"] # Hoomd integrator type
     parameters["integrator_kwargs"] = [{"tau": 0.1}] # dict of integrator kwargs
+    parameters["nlist"] = ["hoomd.md.nlist.cell"]
+    parameters["nlist_exclusions"] = [["1-2", "1-3"]]
     parameters["dt"] = [0.0003]
-    parameters["gsd_period"] = [10000] # Num of steps between gsd snapshots
-    parameters["iterations"] = [5] # Num of MSIBI iterations to perform
-    parameters["n_steps"] = [2e5] # Num simulation steps during each iteration
+    parameters["gsd_period"] = [25e3] # Num of steps between gsd snapshots
+    parameters["iterations"] = [20] # Num of MSIBI iterations to perform
+    parameters["n_steps"] = [5e6] # Num simulation steps during each iteration
     parameters["optimize"]  = ["pairs"] # Choose which potential to optimize
 
     # These parameters below are only needed when optimizing pair potentials
     parameters["rdf_exclude_bonded"] = [True] # Exclude pairs on same molecule
-    parameters["r_switch"] = [None] # Distance value to apply tail correction
+    parameters["r_switch"] = [4.0] # Distance value to apply tail correction
 
     # Add state points to use during MSIBI
     parameters["states"] = [
         [
             {"name":"A",
-            "kT":5.5,
-            "target_trajectory":"P_1.27den_5.5kT.gsd",
+            "kT":6.5,
+            "target_trajectory":"bulk_6.5kT.gsd",
             "alpha":1.0
             },
         ]
@@ -50,39 +52,39 @@ def get_parameters():
     # Add parameters needed to create Pair objects
     parameters["pairs"] = [
         [
-            {"type1":"E_P",
-             "type2":"E_P",
+            {"type1":"E",
+             "type2":"E",
              "form": "table",
              "kwargs": {
                  "n_points": 101,
                  "epsilon": 1,
                  "sigma": 1,
                  "r_max": 5.0,
-                 "r_min": 1e-4
+                 "r_min": 1e-3
               }
              },
 
-            {"type1":"E_P",
-             "type2":"K_P",
+            {"type1":"E",
+             "type2":"K",
              "form": "table",
              "kwargs": {
                  "n_points": 101,
                  "epsilon": 1,
                  "sigma": 1,
                  "r_max": 5.0,
-                 "r_min": 1e-4
+                 "r_min": 1e-3
               }
              },
 
-            {"type1":"K_P",
-             "type2":"K_P",
+            {"type1":"K",
+             "type2":"K",
              "form": "table",
              "kwargs": {
                  "n_points": 101,
                  "epsilon": 1,
                  "sigma": 1,
                  "r_max": 5.0,
-                 "r_min": 1e-4
+                 "r_min": 1e-3
               }
              },
         ],
@@ -91,34 +93,34 @@ def get_parameters():
     # Add parameters needed to create Bond and Angle objects
     parameters["bonds"] = [
             [
-                {"type1":"E_P",
-                 "type2":"K_P",
+                {"type1":"E",
+                 "type2":"K",
                  "form": "file",
-                 "kwargs": {"file_path": "E_P-K_P-bond_pot.txt"}
+                 "kwargs": {"file_path": "E-K_smoothed.txt"}
                  },
 
-                {"type1":"K_P",
-                 "type2":"K_P",
+                {"type1":"K",
+                 "type2":"K",
                  "form": "file",
-                 "kwargs": {"file_path": "K_P-K_P-bond_pot.txt"}
+                 "kwargs": {"file_path": "K-K_smoothed.txt"}
                  }
             ]
     ]
 
     parameters["angles"] = [
             [
-                {"type1":"E_P",
-                "type2":"K_P",
-                "type3": "K_P",
+                {"type1":"E",
+                "type2":"K",
+                "type3": "K",
                 "form": "file",
-                "kwargs": {"file_path": "E_P-K_P-K_P-angle_pot.txt"}
+                "kwargs": {"file_path": "E-K-K-1.0.txt"}
                 },
 
-                {"type1":"K_P",
-                "type2":"E_P",
-                "type3": "K_P",
+                {"type1":"K",
+                "type2":"E",
+                "type3": "K",
                 "form": "file",
-                "kwargs": {"file_path": "K_P-E_P-K_P-angle_pot.txt"}
+                "kwargs": {"file_path": "K-E-K-1.0.txt"}
                 },
             ]
     ]
