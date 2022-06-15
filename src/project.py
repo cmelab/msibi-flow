@@ -70,10 +70,12 @@ def optimize(job):
         opt = MSIBI(
             integrator=job.sp.integrator,
             integrator_kwargs=job.doc.integrator_kwargs,
+            nlist=job.sp.nlist,
+            nlist_exclusions=job.sp.nlist_exclusions,
             dt=job.sp.dt,
             gsd_period=job.sp.gsd_period,
             n_steps=job.sp.n_steps,
-            max_frames = job.sp.max_frames
+            max_frames=job.sp.max_frames
         )
 
         logging.info("Creating State objects...")
