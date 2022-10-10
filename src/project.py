@@ -175,6 +175,12 @@ def optimize(job):
                     r_switch=job.sp.r_switch,
                     _dir=job.ws
             )
+        elif job.sp.optimize == "dihedrals":
+            opt.optimize_dihedrals(
+                    n_iterations=job.sp.iterations,
+                    smooth_rdfs=job.sp.smooth,
+                    _dir=job.ws
+            )
 
         job.doc["done"] = True
 
