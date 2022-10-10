@@ -60,7 +60,7 @@ def get_file(job, file_name):
 @MyProject.operation
 @MyProject.post(completed)
 def optimize(job):
-    from msibi import MSIBI, State, Pair, Bond, Angle
+    from msibi import MSIBI, State, Pair, Bond, Angle, Dihedral
     import logging
 
     with job:
@@ -86,6 +86,7 @@ def optimize(job):
                     kT=state["kT"],
                     traj_file=get_file(job, state["target_trajectory"]),
                     alpha=state["alpha"],
+                    exclude_bonded=state["exclude_bonded"],
 					_dir=job.ws
                 )
             )
@@ -138,6 +139,23 @@ def optimize(job):
 
                 opt.add_angle(_angle)
 
+        if job.sp.dihedrals is not None:
+            logging.info("Creating Dihedral objects...")
+            for dihedral in job.sp.dihedrals:
+                _dihedral = Dihedral(
+                        type1=dihedral["type1"],
+                        type2=dihedral["type2"],
+                        type3=dihedral["type3"],
+                        type4=dihedral["type4"],
+                )
+                if dihedral["form"] == "file":
+                    file_path = get_file(job, dihedral["kwargs"]["file_path"])
+                    _dihedral.set_from_file(file_path)
+                elif dihedral["form"] == "harmonic":
+                    _dihedral.set_harmonic(**dihedral["kwargs"])
+
+                opt.add_dihedral(_dihedral)
+
         if job.sp.optimize == "bonds":
             opt.optimize_bonds(
                     n_iterations=job.sp.iterations,
@@ -154,7 +172,6 @@ def optimize(job):
             opt.optimize_pairs(
                     n_iterations=job.sp.iterations,
                     smooth_rdfs=job.sp.smooth,
-                    rdf_exclude_bonded=job.sp.rdf_exclude_bonded,
                     r_switch=job.sp.r_switch,
                     _dir=job.ws
             )
