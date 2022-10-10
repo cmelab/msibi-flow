@@ -25,28 +25,57 @@ def get_parameters():
     parameters["head_correction"] = ["linear"]
     parameters["smooth"] = [True] # Whether or not to smooth the distributions
     parameters["integrator"] = ["hoomd.md.integrate.nvt"] # Hoomd integrator type
-    parameters["integrator_kwargs"] = [{"tau": 0.1}] # dict of integrator kwargs
+    parameters["integrator_kwargs"] = [{"tau": 0.01}] # dict of integrator kwargs
     parameters["nlist"] = ["hoomd.md.nlist.cell"]
     parameters["nlist_exclusions"] = [["1-2", "1-3"]]
-    parameters["dt"] = [0.0003]
-    parameters["gsd_period"] = [25e3] # Num of steps between gsd snapshots
+    parameters["dt"] = [0.0001]
+    parameters["gsd_period"] = [50e3] # Num of steps between gsd snapshots
     parameters["iterations"] = [20] # Num of MSIBI iterations to perform
-    parameters["n_steps"] = [5e6] # Num simulation steps during each iteration
+    parameters["n_steps"] = [
+            5e5,
+            #1e6,
+            #5e6,
+            #1e7
+    ]
     parameters["optimize"]  = ["pairs"] # Choose which potential to optimize
 
     # These parameters below are only needed when optimizing pair potentials
     parameters["rdf_exclude_bonded"] = [True] # Exclude pairs on same molecule
-    parameters["r_switch"] = [4.0] # Distance value to apply tail correction
+    parameters["r_switch"] = [None] # Distance value to apply tail correction
 
     # Add state points to use during MSIBI
     parameters["states"] = [
+            # Evenly Weighted, with 1.0
         [
             {"name":"A",
-            "kT":6.5,
-            "target_trajectory":"bulk_6.5kT.gsd",
-            "alpha":1.0
+            "kT":6.37,
+            "target_trajectory":"1.27den-6.37kT-ua.gsd",
+            "alpha":1.0,
+            "exclude_bonded": True
             },
-        ]
+
+            {"name":"B",
+            "kT":4.2,
+            "target_trajectory":"1.27den-4.2kT-ua.gsd",
+            "alpha":1.0,
+            "exclude_bonded": True
+            },
+
+            {"name":"C",
+            "kT":1.0,
+            "target_trajectory":"0.5den-1.0kT-ua.gsd",
+            "alpha":1.0,
+            "exclude_bonded": True
+            },
+
+            {"name":"D",
+            "kT":2.77,
+            "target_trajectory":"1.40den-2.77kT-ua.gsd",
+            "alpha":1.0,
+            "exclude_bonded": True
+            },
+        ],
+
     ]
 
     # Add parameters needed to create Pair objects
@@ -88,6 +117,7 @@ def get_parameters():
               }
              },
         ],
+
 	]
 
     # Add parameters needed to create Bond and Angle objects
@@ -113,21 +143,42 @@ def get_parameters():
                 "type2":"K",
                 "type3": "K",
                 "form": "file",
-                "kwargs": {"file_path": "E-K-K-1.0.txt"}
+                "kwargs": {"file_path": "E-K-K_smoothed-1.0.txt"}
                 },
 
                 {"type1":"K",
                 "type2":"E",
                 "type3": "K",
                 "form": "file",
-                "kwargs": {"file_path": "K-E-K-1.0.txt"}
+                "kwargs": {"file_path": "K-E-K_smoothed.txt"}
                 },
+            ]
+    ]
+
+    parameters["dihedrals"] = [
+            [
+                {"type1":"E",
+                "type2":"K",
+                "type3": "K",
+                "type4": "E",
+                "form": "harmonic",
+                "kwargs": {"phi0": 0, "k": "20", "d": -1, "n":1}
+                },
+
+                {"type1":"K",
+                "type2":"E",
+                "type3": "K",
+                "type4": "K",
+                "form": "harmonic",
+                "kwargs": {"phi0": 0, "k": "13", "d": -1, "n":1}
+                },
+
             ]
     ]
     return list(parameters.keys()), list(product(*parameters.values()))
 
 def main():
-    project = signac.init_project("msibi")
+    project = signac.init_project("msibi-dih")
     param_names, param_combinations = get_parameters()
     # Create the generate jobs
     for params in param_combinations:
