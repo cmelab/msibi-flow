@@ -30,10 +30,18 @@ def get_parameters():
     parameters["nlist_exclusions"] = [["1-2", "1-3"]]
     parameters["dt"] = [0.0001]
     parameters["gsd_period"] = [50e3] # Num of steps between gsd snapshots
-    parameters["iterations"] = [20] # Num of MSIBI iterations to perform
+    parameters["iterations"] = [20, 60] # Num of MSIBI iterations to perform
+    parameters["state_alphas"] = [
+            [0.1, 0.1, 0.1, 0.1],
+            [0.2, 0.2, 0.1, 0.2],
+            [0.3, 0.3, 0.1, 0.3],
+            [0.5, 0.5, 0.1, 0.5],
+            [1, 1, 0.25, 1],
+            [1, 1, 0.1, 1],
+    ]
     parameters["n_steps"] = [
-            5e5,
-            #1e6,
+            #5e5,
+            1e6,
             #5e6,
             #1e7
     ]
@@ -62,10 +70,10 @@ def get_parameters():
             },
 
             {"name":"C",
-            "kT":1.0,
-            "target_trajectory":"0.5den-1.0kT-ua.gsd",
+            "kT":6.5,
+            "target_trajectory":"single-chain.gsd",
             "alpha":1.0,
-            "exclude_bonded": True
+            "exclude_bonded": False
             },
 
             {"name":"D",
@@ -86,8 +94,8 @@ def get_parameters():
              "form": "table",
              "kwargs": {
                  "n_points": 101,
-                 "epsilon": 1,
-                 "sigma": 1,
+                 "epsilon": 1.5,
+                 "sigma": 2,
                  "r_max": 5.0,
                  "r_min": 1e-3
               }
@@ -98,8 +106,8 @@ def get_parameters():
              "form": "table",
              "kwargs": {
                  "n_points": 101,
-                 "epsilon": 1,
-                 "sigma": 1,
+                 "epsilon": 1.5,
+                 "sigma": 2,
                  "r_max": 5.0,
                  "r_min": 1e-3
               }
@@ -110,8 +118,8 @@ def get_parameters():
              "form": "table",
              "kwargs": {
                  "n_points": 101,
-                 "epsilon": 1,
-                 "sigma": 1,
+                 "epsilon": 1.5,
+                 "sigma": 2,
                  "r_max": 5.0,
                  "r_min": 1e-3
               }
@@ -156,6 +164,8 @@ def get_parameters():
     ]
 
     parameters["dihedrals"] = [
+
+                None,
             [
                 {"type1":"E",
                 "type2":"K",
@@ -178,7 +188,7 @@ def get_parameters():
     return list(parameters.keys()), list(product(*parameters.values()))
 
 def main():
-    project = signac.init_project("msibi-dih")
+    project = signac.init_project("msibi-chain")
     param_names, param_combinations = get_parameters()
     # Create the generate jobs
     for params in param_combinations:

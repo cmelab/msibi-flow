@@ -66,7 +66,7 @@ def optimize(job):
     with job:
         job.doc["done"] = False
 
-        logging.info("Setting up MSIBI optimizer...")
+        print("Setting up MSIBI optimizer...")
         opt = MSIBI(
             integrator=job.sp.integrator,
             integrator_kwargs=job.doc.integrator_kwargs,
@@ -78,20 +78,21 @@ def optimize(job):
             max_frames=job.sp.max_frames
         )
 
-        logging.info("Creating State objects...")
-        for state in job.sp.states:
+        print("Creating State objects...")
+        for idx, state in enumerate(job.sp.states):
+            alpha = job.sp.state_alphas[idx]
             opt.add_state(
                 State(
                     name=state["name"],
                     kT=state["kT"],
                     traj_file=get_file(job, state["target_trajectory"]),
-                    alpha=state["alpha"],
+                    alpha=alpha,
                     exclude_bonded=state["exclude_bonded"],
 					_dir=job.ws
                 )
             )
 
-        logging.info("Creating Pair objects...")
+        print("Creating Pair objects...")
         for pair in job.sp.pairs:
             _pair = Pair(
                         type1=pair["type1"],
@@ -105,7 +106,7 @@ def optimize(job):
             opt.add_pair(_pair)
 
         if job.sp.bonds is not None:
-            logging.info("Creating Bond objects...")
+            print("Creating Bond objects...")
             for bond in job.sp.bonds:
                 _bond = Bond(
                         type1=bond["type1"],
@@ -122,7 +123,7 @@ def optimize(job):
                 opt.add_bond(_bond)
 
         if job.sp.angles is not None:
-            logging.info("Creating Angle objects...")
+            print("Creating Angle objects...")
             for angle in job.sp.angles:
                 _angle = Angle(
                         type1=angle["type1"],
@@ -140,7 +141,7 @@ def optimize(job):
                 opt.add_angle(_angle)
 
         if job.sp.dihedrals is not None:
-            logging.info("Creating Dihedral objects...")
+            print("Creating Dihedral objects...")
             for dihedral in job.sp.dihedrals:
                 _dihedral = Dihedral(
                         type1=dihedral["type1"],
