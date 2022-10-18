@@ -21,7 +21,6 @@ def get_parameters():
 
     '''
     parameters = OrderedDict()
-    parameters["max_frames"] = [20] # Num of frames to sample in trajectory
     parameters["head_correction"] = ["linear"]
     parameters["smooth"] = [True] # Whether or not to smooth the distributions
     parameters["integrator"] = ["hoomd.md.integrate.nvt"] # Hoomd integrator type
@@ -58,6 +57,7 @@ def get_parameters():
             {"name":"A",
             "kT":6.37,
             "target_trajectory":"1.27den-6.37kT-ua.gsd",
+            "max_frames": 20,
             "alpha":1.0,
             "exclude_bonded": True
             },
@@ -65,6 +65,7 @@ def get_parameters():
             {"name":"B",
             "kT":4.2,
             "target_trajectory":"1.27den-4.2kT-ua.gsd",
+            "max_frames": 20,
             "alpha":1.0,
             "exclude_bonded": True
             },
@@ -72,6 +73,7 @@ def get_parameters():
             {"name":"C",
             "kT":6.5,
             "target_trajectory":"single-chain.gsd",
+            "max_frames": 200,
             "alpha":1.0,
             "exclude_bonded": False
             },
@@ -79,6 +81,7 @@ def get_parameters():
             {"name":"D",
             "kT":2.77,
             "target_trajectory":"1.40den-2.77kT-ua.gsd",
+            "max_frames": 20,
             "alpha":1.0,
             "exclude_bonded": True
             },

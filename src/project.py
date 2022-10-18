@@ -75,7 +75,6 @@ def optimize(job):
             dt=job.sp.dt,
             gsd_period=job.sp.gsd_period,
             n_steps=job.sp.n_steps,
-            max_frames=job.sp.max_frames
         )
 
         print("Creating State objects...")
@@ -86,6 +85,7 @@ def optimize(job):
                     name=state["name"],
                     kT=state["kT"],
                     traj_file=get_file(job, state["target_trajectory"]),
+                    max_frames=state["max_frames"],
                     alpha=alpha,
                     exclude_bonded=state["exclude_bonded"],
 					_dir=job.ws
