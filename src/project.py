@@ -84,8 +84,12 @@ def optimize(job):
                 State(
                     name=state["name"],
                     kT=state["kT"],
-                    traj_file=get_file(job, state["target_trajectory"]),
+                    traj_file=get_file(
+                        job,
+                        f"msibi-state-point-files/{state['target_trajectory']}"
+                    ),
                     max_frames=state["max_frames"],
+                    target_frames=state["target_frames"],
                     alpha=alpha,
                     exclude_bonded=state["exclude_bonded"],
 					_dir=job.ws
@@ -102,6 +106,10 @@ def optimize(job):
 
             if pair["form"] == "table":
                 _pair.set_table_potential(**pair["kwargs"])
+            elif pair["form"] == "file":
+                job.doc.pair_form = "file"
+                file_path = get_file(job, pair["kwargs"]["file_path"])
+                _pair.set_from_file(file_path=file_path)
 
             opt.add_pair(_pair)
 
@@ -173,6 +181,7 @@ def optimize(job):
             opt.optimize_pairs(
                     n_iterations=job.sp.iterations,
                     smooth_rdfs=job.sp.smooth,
+                    smoothing_window=9,
                     r_switch=job.sp.r_switch,
                     _dir=job.ws
             )
